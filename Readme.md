@@ -117,33 +117,50 @@ If you use data from different scanners that produce data with varying orientati
 
 #### Brain mask prediction using an already trained CNN
 ```
-python deep3Dpredict.py --help
-usage: deep3Dpredict.py [-h] -i I [I ...] [-o O] [-n N] [-c C] [-f F]
+
+python deep3Dpredict.py -h
+usage: deep3Dpredict.py [-h] -data DATA [DATA ...] [-name NAME]
+                        [-output OUTPUT] [-cc CC] [-format FORMAT]
                         [-prob PROB] [-gridsize GRIDSIZE]
+                        [-data_clip_range DATA_CLIP_RANGE DATA_CLIP_RANGE]
+                        [-CNN_width_scale CNN_WIDTH_SCALE]
 
 Main module to apply an already trained 3D-CNN to segment data
 
 optional arguments:
-  -h, --help          show this help message and exit
-  -i I [I ...]        Any number and combination of paths to files or folders
-                      that will be used as input-data for training the CNN
-  -o O                output path for the predicted brain masks
-  -n N                name of the trained/saved CNN model (can be either a
-                      folder or .save file)
-  -c C                Filter connected components: removes all connected
-                      components but the largest two (i.e. background and
-                      brain) [default=True]
-  -f F                File saving format for predictions. Options are "h5",
-                      "nifti", "numpy" [default=nifti]
-  -prob PROB          save probability map as well
-  -gridsize GRIDSIZE  size of CNN output grid (optimal: largest possible
-                      divisor of the data-volume axes that still fits into GPU
-                      memory). This setting heavily affects prediction times:
-                      larger values are better. Values that are too large will
-                      cause a failure due to too little GPU-memory.
+  -h, --help            show this help message and exit
+  -data DATA [DATA ...]
+                        Any number and combination of paths to files or
+                        folders that will be used as input-data for training
+                        the CNN
+  -name NAME            name of the trained/saved CNN model (can be either a
+                        folder or .save file)
+  -output OUTPUT        output path for the predicted brain masks
+  -cc CC                Filter connected components: removes all connected
+                        components but the largest two (i.e. background and
+                        brain) [default=True]
+  -format FORMAT        File saving format for predictions. Options are "h5",
+                        "nifti", "numpy" [default=nifti]
+  -prob PROB            save probability map as well
+  -gridsize GRIDSIZE    size of CNN output grid (optimal: largest possible
+                        divisor of the data-volume axes that still fits into
+                        GPU memory). This setting heavily affects prediction
+                        times: larger values are better. Values that are too
+                        large will cause a failure due to too little GPU-
+                        memory.
+  -data_clip_range DATA_CLIP_RANGE DATA_CLIP_RANGE
+                        [Mostly for single-channel data] Clip all pixel-values
+                        outside of the given range (important if values of
+                        volumes have very different ranges!) -- Must be
+                        identical to the setting used during training!
+  -CNN_width_scale CNN_WIDTH_SCALE
+                        Scale factor for the layer widths of the CNN; values
+                        larger than 1 will increase the total network size
+                        beyond the default size, but be careful to not exceed
+                        your GPU memory. -- Must be identical to the setting
+                        used during training!
 
-
-python deep3Dpredict.py -n OASIS_ISBR_LPBA40__trained_CNN.save -i /home/share/brain_mask/__NEW__/ibsr_data/02/IBSR_02_ana.nii.gz -gridsize 16
+python deep3Dpredict.py -n OASIS_ISBR_LPBA40__trained_CNN.save -d /home/share/brain_mask/__NEW__/ibsr_data/02/IBSR_02_ana.nii.gz -gridsize 16
  
 ```
 #### Train a new CNN (with your data)

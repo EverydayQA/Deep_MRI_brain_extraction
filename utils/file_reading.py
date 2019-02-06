@@ -32,11 +32,13 @@ import os
 import h5py
 import numpy as np
 
-def get_path(fname):
-    return '/'.join(fname.replace('\\','/').split('/')[:-1])
 
-def get_filename(fname, remove_trailing_ftype= False):
-    fn = fname.replace('\\','/').split('/')[-1]
+def get_path(fname):
+    return '/'.join(fname.replace('\\', '/').split('/')[:-1])
+
+
+def get_filename(fname, remove_trailing_ftype=False):
+    fn = fname.replace('\\', '/').split('/')[-1]
     if remove_trailing_ftype:
         return '.'.join(fn.split('.')[:-1])
     return fn
@@ -44,7 +46,7 @@ def get_filename(fname, remove_trailing_ftype= False):
 
 def mkdir(fname):
     path = get_path(fname)
-    if path!="" and os.path.exists(path)==False:
+    if path != "" and os.path.exists(path) is False:
         os.makedirs(path)
 
 
@@ -54,7 +56,6 @@ try:
         from medpy.io import load as load_mha
     except:
         pass
-
 
     def load_nifti(fname):
         """
@@ -68,7 +69,8 @@ try:
         nifti_obj = nib.load(fname)
         nifti_affine = nifti_obj.get_affine()
         nifti_header = nifti_obj.get_header()
-        nifti_data = nifti_obj.get_data()#.astype(dtype)
+        # .astype(dtype)
+        nifti_data = nifti_obj.get_data()
         return nifti_data, nifti_affine, nifti_header
 
     def save_nifti(fname, data, affine=None, header=None):
@@ -82,53 +84,47 @@ except:
     pass
 
 
-
-
 def load_h5(fname, key=None):
     """load h5 file"""
     try:
-        hfile = h5py.File(fname,'r')
+        hfile = h5py.File(fname, 'r')
     except:
-        assert 0, "\nload_h5()::ERROR: Cannot open <<"+str(fname)+">>\n"
-    if key==None:
+        assert 0, "\nload_h5()::ERROR: Cannot open <<" + str(fname) + ">>\n"
+    if key is None:
         try:
             key = hfile.keys()[0]
         except:
-            assert 0, "\nload_h5()::ERROR: File is not h5 / is empty  <<"+str(fname)+">>\n"
+            assert 0, "\nload_h5()::ERROR: File is not h5 / is empty  <<" + str(fname) + ">>\n"
     xx = hfile[key]
     if isinstance(xx, h5py.Group):
-        xx=dict(xx)
-        xx = xx[xx.keys()[0] if key==None else key]
-    dat = np.asarray(xx, dtype = xx.dtype)
+        xx = dict(xx)
+        xx = xx[xx.keys()[0] if key is None else key]
+    dat = np.asarray(xx, dtype=xx.dtype)
     hfile.close()
     return dat
 
 
-
-
-
-def save_h5(fname, data, compress = 1, fast_compression=1):#save as h5
+def save_h5(fname, data, compress=1, fast_compression=1):
     """save h5 file. set_name='data'"""
 
     mkdir(fname)
-    h5f = h5py.File(fname,mode="w")
+    h5f = h5py.File(fname, mode="w")
 
     if compress:
-        h5set = h5f.create_dataset( "data", data.shape,dtype=data.dtype, compression=("gzip" if fast_compression!=True else "lzf")) #fast & bad: "lzf"
+        # fast & bad: "lzf"
+        h5set = h5f.create_dataset("data", data.shape, dtype=data.dtype, compression=("gzip" if fast_compression is not True else "lzf"))
     else:
-        h5set = h5f.create_dataset( "data", data.shape,dtype=data.dtype)
+        h5set = h5f.create_dataset("data", data.shape, dtype=data.dtype)
     h5set[...] = data
     h5f.close()
     return 0
 
 
-
-def save_text(fname,string):
+def save_text(fname, string):
     mkdir(fname)
-    f=open(fname,'w')
+    f = open(fname, 'w')
     f.write(string)
     f.close()
-
 
 
 def load_file(filename):
@@ -136,26 +132,22 @@ def load_file(filename):
         d = load_h5(filename)
         assert d is not None
         return d
-    except:
+    except Exception as e:
+        print(e)
         pass
 
     try:
         d, nifti_affine, nifti_header = load_nifti(filename)
         return d
-    except:
+    except Exception as e:
+        print(e)
         pass
 
     try:
         d = nib.load(filename)
-        d=d.get_data()
+        d = d.get_data()
         return d
-    except:
+    except Exception as e:
+        print(e)
         pass
-    assert 0, 'Could not load file <'+str(filename)+'>'
-
-
-
-
-
-
-
+    assert 0, 'Could not load file <' + str(filename) + '>'

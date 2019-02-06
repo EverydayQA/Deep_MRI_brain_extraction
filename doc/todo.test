@@ -1,2 +1,3 @@
 add unittests
 pytest or nosetests?
+add test coverage

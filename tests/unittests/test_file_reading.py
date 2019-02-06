@@ -1,5 +1,7 @@
 import unittest
-from Deep_MRI_brain_extraction.utils import file_reading
+import mock
+import os
+from utils import file_reading
 
 
 class TestFileReading(unittest.TestCase):
@@ -12,13 +14,21 @@ class TestFileReading(unittest.TestCase):
         self.assertEqual(path, '/tmp/abc')
 
     def test_get_filename(self):
-        path = file_reading.get_filename('/tmp/abc/test.nii')
-        self.assertEqual(path, 'test.nii')
-        path = file_reading.get_filename('/tmp/abc/test.nii', remove_trailing_ftype=True)
-        self.assertEqual(path, 'test')
+        fname = file_reading.get_filename('/tmp/abc/test.nii')
+        self.assertEqual(fname, 'test.nii')
+
+        fname = file_reading.get_filename('/tmp/abc/test.nii', remove_trailing_ftype=True)
+        self.assertEqual(fname, 'test')
+        fname = file_reading.get_filename('/tmp/abc/test.nii.gz', remove_trailing_ftype=True)
+        self.assertEqual(fname, 'test.nii')
 
     def test_mkdir(self):
-        pass
+        with mock.patch('os.makedirs') as mock_makedirs:
+            with mock.patch('os.path.exists') as mock_exists:
+                mock_exists.return_value = False
+                file_reading.mkdir('/tmp/predicts/abc.nii.gz')
+                mock_makedirs.assert_called_once_with('/tmp/predicts')
+                self.assertFalse(os.path.isdir('/tmp/predicts'))
 
     def test_load_nifti(self):
         pass

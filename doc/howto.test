@@ -1,0 +1,15 @@
+# since there is no setup.py installed
+# create conda env named condapy27, see howto.conda
+
+source activate condapy27 
+# add current . for testing
+ 1010  export PYTHONPATH="."
+ 1011  pytest -v tests/
+ 1012  coverage run --source=utils,NNet_Core -m unittest discover -s tests
+ 1013  coverage report -m
+ 1014  nosetests -v tests
+
+ coverage run --source=utils,NNet_Core -m unittest discover -s tests
+ coverage report -m
+
+# coverage 1% now

@@ -36,6 +36,7 @@ import numpy as np
 def get_path(fname):
     """
     Get dirname from absolute path
+    :param1: filename
     :return: os.path.dirname()
     :rtype: string
     """
@@ -45,8 +46,10 @@ def get_path(fname):
 
 def get_filename(fname, remove_trailing_ftype=False):
     """
-    Get basename of input file
-    :return: os.path.basename()
+    Get basename of input file, remove the last dot extension if remove_trailing_ftype is set True
+    :param1: filename
+    :param2: optional, remove file extension if set True
+    :return: os.path.basename() or without extension
     :rtype: string
     """
     fname = os.path.abspath(fname)

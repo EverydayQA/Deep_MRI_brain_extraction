@@ -34,10 +34,22 @@ import numpy as np
 
 
 def get_path(fname):
+    """
+    Get dirname from absolute path
+    :return: os.path.dirname()
+    :rtype: string
+    """
+    fname = os.path.abspath(fname)
     return '/'.join(fname.replace('\\', '/').split('/')[:-1])
 
 
 def get_filename(fname, remove_trailing_ftype=False):
+    """
+    Get basename of input file
+    :return: os.path.basename()
+    :rtype: string
+    """
+    fname = os.path.abspath(fname)
     fn = fname.replace('\\', '/').split('/')[-1]
     if remove_trailing_ftype:
         return '.'.join(fn.split('.')[:-1])

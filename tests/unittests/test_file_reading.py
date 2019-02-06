@@ -1,4 +1,5 @@
 import unittest
+from Deep_MRI_brain_extraction.utils import file_reading
 
 
 class TestFileReading(unittest.TestCase):
@@ -7,12 +8,14 @@ class TestFileReading(unittest.TestCase):
     """
 
     def test_get_path(self):
-        # get_path(fname):
-        pass
+        path = file_reading.get_path('/tmp/abc/test.nii')
+        self.assertEqual(path, '/tmp/abc')
 
     def test_get_filename(self):
-        # (fname, remove_trailing_ftype=False)
-        pass
+        path = file_reading.get_filename('/tmp/abc/test.nii')
+        self.assertEqual(path, 'test.nii')
+        path = file_reading.get_filename('/tmp/abc/test.nii', remove_trailing_ftype=True)
+        self.assertEqual(path, 'test')
 
     def test_mkdir(self):
         pass

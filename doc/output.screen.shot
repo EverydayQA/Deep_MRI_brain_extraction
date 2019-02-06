@@ -1,0 +1,21 @@
+python deep3Dpredict.py -n OASIS_ISBR_LPBA40__trained_CNN.save -data /home/xxx/fslbuild/fsl/data/standard/MNI152lin_T1_2mm.nii.gz -gridsize 16
+using model-parameters: OASIS_ISBR_LPBA40__trained_CNN.save
+loading...
+Loaded... 100.0 % (91, 1, 109, 91)  ('/home/xxx/fslbuild/fsl/data/standard/MNI152lin_T1_2mm.nii.gz', None)
+Total n. of examples: 1 images/volumes
+Training on 0 images/volumes
+Testing on  1 images/volumes
+Building CNN...
+Compiling Output Functions
+TotalForwardPassCost = 10^( 10.1454005915 ) = 13976569600
+done: Build3D()
+compiling output function
+------------------------------
+@ 1 of max. 1
+Predicting data of shape: (91, 109, 91, 1)
+COMPLETION = 0.0 %
+COMPLETION = 33.3333333333 %
+COMPLETION = 66.6666666667 %
+File saved as: predictions/prediction_MNI152lin_T1_2mm.nii__test
+timings (len 1 ) 1067.189841 +- 0.0
+

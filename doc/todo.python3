@@ -1,0 +1,22 @@
+# python2 to python3 conversion
+# machine fedora27 using conda python3.6
+create python36 branch after print() being updated
+
+# The print()
+
+# no cPickle with python3.6
+# import cPickle
+import pickle as cPickle
+
+
+# very old, disable it
+# from theano.sandbox.cuda.basic_ops import gpu_contiguous
+ 16 "You are importing theano.sandbox.cuda. This is the old GPU back-end and "
+ 17 unittest.case.SkipTest: You are importing theano.sandbox.cuda. This is the old GPU back-end and is removed from Theano. Use Theano 0.9 to use it.     Even better, transition to the new GPU back-end! See https://github.com/Theano/Theano/wiki/Converting-to-the-new-gpu-back-end%28gpuarray%29
+
+# no xrange() at python3.6
+# xrange to range()
+
+
+# cpu support
+conda install -c conda-forge blas

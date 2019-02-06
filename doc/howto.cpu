@@ -1,0 +1,6 @@
+your ~/.theanorc should be like this
+
+[global]
+floatX=float32
+device=cpu
+

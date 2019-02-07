@@ -6,7 +6,10 @@ create python36 branch after print() being updated
 
 # no cPickle with python3.6
 # import cPickle
-import pickle as cPickle
+# import pickle as cPickle? not quite sure
+On python3.x cPickle has changed from cPickle to _pickle. Thus in python3.x, you can do the following if you want to use cPickle:
+import _pickle as cPickle
+
 
 
 # very old, disable it

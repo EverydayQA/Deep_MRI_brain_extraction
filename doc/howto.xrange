@@ -1,0 +1,20 @@
+# python3 no longer support xrange
+# make these tests first if port to python36
+# xrange return generator func
+# range return a list
+# add XrangeTest() - shoud not a problem with just 1 parameters and in a loop
+
+
+NNet_Core/maxPool3D.py:    for i in xrange(pool_factor):
+NNet_Core/maxPool3D.py:    for i in xrange(pool_factor):
+NNet_Core/maxPool3D.py:        for i in xrange(pool_shape[2]):
+NNet_Core/maxPool3D.py:        for i in xrange(pool_shape[0]):
+NNet_Core/maxPool3D.py:        for i in xrange(pool_shape[1]):
+NNet_Core/NN_ConvLayer_2D.py:    for i in xrange(pool_factor):
+NNet_Core/NN_ConvLayer_2D.py:    for i in xrange(pool_shape[1]):
+NNet_Core/NN_ConvLayer_2D.py:    for i in xrange(pool_shape[0]):
+NNet_Core/NN_ConvLayer_3D.py:    for i in xrange(pool_factor):
+NNet_Core/NN_ConvLayer_3D.py:        for i in xrange(2):
+NNet_Core/NN_ConvLayer_3D.py:            for j in xrange(2):
+NNet_Core/NN_ConvLayer_3D.py:                for k in xrange(2):
+NNet_Core/NN_PerceptronLayer.py:    for i in xrange(pool_factor):

@@ -28,16 +28,145 @@ THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABI
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 """
-
 import os
 from os import listdir as _listdir
-from os.path import isfile as _isfile,join as  _join
+from os.path import isfile as _isfile, join as _join
 
+
+class DataMatch(object):
+    """
+    Filtering Data with 4 conditions startwith/endswith/contains/contains_not
+    """
+
+    def __init__(self, endswith=None, contains=None, startswith=None, contains_not=None):
+        self.endswith = endswith
+        self.contains = contains
+        self.startswith = startswith
+        self.contains_not = contains_not
+
+    def list_directories(self, dir_paths):
+        paths = []
+        if not isinstance(dir_paths, list):
+            if os.path.isdir(dir_paths):
+                dir_paths = [dir_paths]
+            else:
+                raise Exception('dir_paths {} is not list'.format(dir_paths))
+        for path in dir_paths:
+            items = self.get_subdirs(path)
+            paths.extend(items)
+        # should they really be sorted?
+        paths.sort()
+        return paths
+
+    def filter_list(self, string_list):
+        items = []
+        for item in string_list:
+            if self.keep_str(item):
+                items.append(item)
+        return items
+
+    def list_files(self, dir_paths):
+        """
+        Get files in each path in paths without walk into deeper, just os.listdir
+        abspath()
+        apply filter
+        """
+        files = []
+        if not isinstance(dir_paths, list):
+            if os.path.isdir(dir_paths):
+                dir_paths = [dir_paths]
+            else:
+                raise Exception('dir_paths {} is not list'.format(dir_paths))
+        for path in dir_paths:
+            imgs = self.files_in_path(path)
+            files.extend(imgs)
+        files.sort()
+        return files
+
+    def get_subdirs(self, path):
+        """
+        Get files in the path, with conditions
+        # e.g. '/home/nkrasows/phd/data/graham/Neurons/4dBinNeuronVolume/h5/'
+        """
+        if not os.path.isdir(path):
+            return []
+        paths = []
+        path = os.path.abspath(path)
+        for item in os.listdir(path):
+            if not os.path.isdir(item):
+                # skip file
+                continue
+            if self.keep_str(item):
+                item = os.path.join(path, item)
+                paths.append(item)
+        return paths
+
+    def files_in_path(self, path):
+        """
+        Get files in the path, with conditions
+        # e.g. '/home/nkrasows/phd/data/graham/Neurons/4dBinNeuronVolume/h5/'
+        """
+        if not os.path.isdir(path):
+            return []
+        files = []
+        path = os.path.abspath(path)
+        for img in os.listdir(path):
+            if os.path.isdir(img):
+                # skip dir
+                continue
+            base = os.path.basename(img)
+            if self.keep_str(base):
+                files.append(img)
+        return files
+
+    def keep_str(self, base):
+        """
+        Assume basename match
+        """
+        if not self.keep_with_contains(base):
+            return False
+        if not self.keep_with_contains_not(base):
+            return False
+        if not self.keep_with_endswith(base):
+            return False
+        if not self.keep_with_startswith(base):
+            return False
+        return True
+
+    def keep_with_startswith(self, img):
+        """
+        """
+        if not self.startswith:
+            return True
+        if img.startswith(self.startswith):
+            return True
+        return False
+
+    def keep_with_endswith(self, img):
+        if not self.endswith:
+            return True
+        if img.endswith(self.endswith):
+            return True
+        return False
+
+    def keep_with_contains(self, img):
+        if not self.contains:
+            return True
+        if self.contains in img:
+            return True
+        return False
+
+    def keep_with_contains_not(self, img):
+        if not self.contains_not:
+            return True
+        if self.contains_not in img:
+            return False
+        return True
 
 
 def list_files(dir_paths, endswith=None, contains=None, startswith=None, contains_not=None):
     """ endswith may be a sting like '.jpg' """
-    files=[]
+    files = []
     if type(dir_paths)!=type([]):
         dir_paths=[dir_paths]
     for path in dir_paths:#'/home/nkrasows/phd/data/graham/Neurons/4dBinNeuronVolume/h5/',
@@ -48,9 +177,6 @@ def list_files(dir_paths, endswith=None, contains=None, startswith=None, contain
             print("path",path,"invalid")
     files.sort()
     return files
-
-
-
 
 
 def filter_list(string_list,endswith=None, contains=None, startswith=None, contains_not=None):
@@ -129,6 +255,17 @@ def ID_check(list_training_data_, list_training_labels_):
         assert a==b, 'training data/labels are shuffled and do not match!: '+a+' <>  '+b
 
 
+class OasisData(object):
+    """
+    Flixible enough to define user's data location
+    """
+    
+    def training_labels(self):
+        return []
+
+    def training_data(self):
+        return []
+
 
 def OASIS_data(location, labels_location = None):
     """
@@ -137,10 +274,17 @@ def OASIS_data(location, labels_location = None):
     if labels_location is None:
         labels_location = location
 
+    # dm = DataMatch(endswith='hardmask.nii.gz')
+    # list_training_label_ = dm.list_files(labels_location)
     list_training_labels_ = list_files(labels_location,endswith='hardmask.nii.gz')
+
+    # dd = DataMatch()
+    # dirs = dd.list_direcoties(os.path.join('disc1')) + dd.list_directories(os.path.join(locations, 'disc2'))
     dirs = list_directories(location+"/disc1") + list_directories(location+"/disc2")
     list_training_data_=[]
     for d in dirs:
+        # df = DataMatch(endswith="t88_gfc.hdr")
+        # files = df.list_files(os.path.join(d, '/PROCESSED/MPRAGE/T88_111'))
         dat = list_files(d+"/PROCESSED/MPRAGE/T88_111",endswith="t88_gfc.hdr")
         assert len(dat)==1
         dat=dat[0]
@@ -185,5 +329,3 @@ def get_CrossVal_part(list_training_data, list_training_labels, CV_index, CV_tot
     list_training_labels = list_training_labels[:offset]  + list_training_labels[offset+cross_val_n_per_test:]
     assert len(list_training_data)==len(list_training_labels)
     return {'list_test_data':list_test_data,'list_training_data':list_training_data, 'list_training_labels':list_training_labels}
-
-

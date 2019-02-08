@@ -27,7 +27,7 @@ THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABI
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 """
-
+import sys
 import argparse
 import time
 import numpy as np
@@ -55,14 +55,23 @@ class Deep3dPredict(object):
 
     @property
     def list_training_data(self):
+        """
+        lists of strings that specify the locations of training data files (each file must contain one 3D or 4D-volume of type float32; the 4th dimension containins the channels)
+        """
         return []
 
     @property
     def list_training_labels(self):
+        """
+        lists of strings that specify the locations of training labels files (each file must contain one 3D or 4D-volume of type int; the 4th dimension containins the channels)
+        """
         return []
 
     @property
     def list_test_data(self):
+        """
+        lists of strings that specify the locations of test data files (each file must contain one 3D or 4D-volume of type float32; the 4th dimension containins the channels)
+        """
         return self.data
 
     @property
@@ -75,15 +84,36 @@ class Deep3dPredict(object):
 
     @property
     def save_name(self):
+        """
+        str, name of the folder (and files) for saving/loading the trained network parameters
+        """
         save_name = self.tolist(self.args.name)
         save_name = self.filter_saves(save_name)
         print('using model-parameters: {}'.format(save_name))
         return save_name
 
+    def filter_saves(self, path_or_file):
+        candidates = self.findall(path_or_file)
+        matches = []
+        for c in candidates:
+            if '.save' in c:
+                matches.append(c)
+                if 'end_' in c:
+                    return c
+        if len(matches) == 0:
+            raise ValueError('The provided save file/directory does not contain any saved model (file ending in .save)')
+        return matches[-1]
+
     @property
     def n_labels_pred_per_dim(self):
         """
         16 or 32
+        # this number should be as large as possible to increase the speed-efficiency when making predictions
+        # the only limit is the RAM of the GPU which will manifest as memory allocation errors
+
+        # 32
+        # n_labels_pred_per_dim = n_labels_pred_per_dim
+
         """
         return self.args.gridsize
 
@@ -115,43 +145,14 @@ class Deep3dPredict(object):
         """
         This is the runner for the brain mask prediction project.
         It will either train the CNN or load the trained network and predict the test set.
-
-        Input:
-        --------
-
-
-        self.list_training_data:
-
-            lists of strings that specify the locations of training data files (each file must contain one 3D or 4D-volume of type float32; the 4th dimension containins the channels)
-
-        self.list_training_labels:
-
-            lists of strings that specify the locations of training labels files (each file must contain one 3D or 4D-volume of type int; the 4th dimension containins the channels)
-
-        list_test_data:
-
-            lists of strings that specify the locations of test data files (each file must contain one 3D or 4D-volume of type float32; the 4th dimension containins the channels)
-
-        save_name:
-
-            str, name of the folder (and files) for saving/loading the trained network parameters
-
         """
         assert len(self.list_training_data) == len(self.list_training_labels)
 
-        # this number should be as large as possible to increase the speed-efficiency when making predictions
-        # the only limit is the RAM of the GPU which will manifest as memory allocation errors
-
-        # 32
-        # n_labels_pred_per_dim = n_labels_pred_per_dim
-
         # CNN specification:
-
         cnn, patchCreator = Segmentation_trainer.Build3D(self.nnet_args_build3d, **self.kwargs_build3d)
-
         cnn.LoadParameters(self.save_name)
-        t0 = time.clock()
 
+        t0 = time.clock()
         Segmentation_predictor.predict_all(cnn, patchCreator, apply_cc_filtering=self.apply_cc_filtering,
                                            save_as=self.output_path, output_filetype=self.output_filetype,
                                            save_prob_map=self.save_prob_map)
@@ -248,21 +249,8 @@ class Deep3dPredict(object):
         parser.add_argument('-CNN_width_scale', default=1, type=float, help='Scale factor for the layer widths of the CNN; values larger than 1 will increase the total network size beyond the default size, but be careful to not exceed your GPU memory. -- Must be identical to the setting used during training!')
         return parser
 
-    def filter_saves(self, path_or_file):
-        candidates = self.findall(path_or_file)
-        matches = []
-        for c in candidates:
-            if '.save' in c:
-                matches.append(c)
-                if 'end_' in c:
-                    return c
-        if len(matches) == 0:
-            raise ValueError('The provided save file/directory does not contain any saved model (file ending in .save)')
-        return matches[-1]
-
 
 def main():
-    import sys
     deep = Deep3dPredict(sys.argv[1:])
     deep.predict()
 

@@ -167,12 +167,12 @@ class DataMatch(object):
 def list_files(dir_paths, endswith=None, contains=None, startswith=None, contains_not=None):
     """ endswith may be a sting like '.jpg' """
     files = []
-    if type(dir_paths)!=type([]):
-        dir_paths=[dir_paths]
-    for path in dir_paths:#'/home/nkrasows/phd/data/graham/Neurons/4dBinNeuronVolume/h5/',
+    if not isinstance(dir_paths, list):
+        dir_paths = [dir_paths]
+    for path in dir_paths:  # '/home/nkrasows/phd/data/graham/Neurons/4dBinNeuronVolume/h5/',
         try:
             gg= [ (_join(path,f) if path!="." else f) for f in _listdir(path) if _isfile(_join(path,f)) and (startswith == None or f.startswith(startswith)) and (endswith == None or f.endswith(endswith)) and (contains == None or contains in f)  and (contains_not == None or (not (contains_not in f))) ]
-            files+=gg
+            files += gg
         except:
             print("path",path,"invalid")
     files.sort()
@@ -223,7 +223,36 @@ def LPBA40_data(location):
     assert len(list_training_data_) == len(list_training_labels_)
     return list_training_data_, list_training_labels_
 
+class TraingDataLabels(object):
+    """
+    Centralize all data models
+    """
 
+    def oasis_kwargs(self):
+        d = {}
+        d['labels_location'] = None
+        d['data_subdirs'] = ['disc1', 'disc2']
+        d['endswith_labels'] = 'hardmask.nii.gz'
+        d['endswith_data'] = 't88_gfc.hdr'
+        d['processed_data_subdir'] = '/PROCESSED/MPRAGE/T88_111'
+        return d
+
+    def oasis_data(self):
+        oasis = DataLabels(**self.oasis_kwargs())
+        return oasis.list_training_labels, oasis.list_training_data
+
+    def ibsr_kwargs(self):
+        d = {}
+        d['labels_location'] = None
+        d['data_subdirs'] = None
+        d['endswith_labels'] = 'mask.nii.gz'
+        d['endswith_data'] = 'ana.nii.gz'
+        d['processed_data_subdir'] = None
+        return d
+
+        def ibsr_data():
+            ibsr = DataLabels(**self.ibsr.kwargs())
+            return ibsr.list_training_labels, ibsr.list_training_data
 
 
 def IBSR_data(location):
@@ -254,17 +283,71 @@ def ID_check(list_training_data_, list_training_labels_):
     for a,b in zip(IDs_data, IDs_labels):
         assert a==b, 'training data/labels are shuffled and do not match!: '+a+' <>  '+b
 
-
-class OasisData(object):
+class DataLabels(object):
     """
-    Flixible enough to define user's data location
+    Flexible enough to define user's data location
     """
-    
-    def training_labels(self):
-        return []
 
-    def training_data(self):
-        return []
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+    @property
+    def labels_location(self):
+        return self.kwargs.get('labels_location', None)
+
+    @property
+    def data_subdirs(self):
+        """
+        ['disc1', disc2']
+        """
+        return self.kwargs.get('data_subdirs', None)
+
+    def dirs_training_data(self):
+        dd = DataMatch()
+        if not self.subdirs:
+            return dd.list_directories(self.labels_location)
+        dirs = []
+        for subdir in self.data_subdirs:
+            path = os.path.join(self.location_path, subdir)
+            subdirs = dd.list_direcoties(path)
+            dirs.extend(subdirs)
+        return dirs
+
+    @property
+    def endswith_labels(self):
+        """
+        hardmask.nii.gz
+        """
+        return self.kwargs.get('endswith_label', None)
+
+    def list_training_labels(self):
+        dm = DataMatch(endswith=self.endswith_labels)
+        return dm.list_files(self.labels_location)
+
+    @property
+    def endswith_data(self):
+        """
+        t88_gfc.hdr
+        """
+        return self.kwargs.get('endswith_data', None)
+
+    @property
+    def processed_data_subdir(self):
+        """
+        /PROCESSED/MPRAGE/T88_111
+        """
+        return self.kwargs.get('processed_data_subdir', None)
+
+    def list_training_data(self):
+        files = []
+        for path in self.dirs_training_data():
+            df = DataMatch(endswith=self.endswith_data)
+            if self.processed_data_subdir:
+                path = os.path.join(path, self.processed_data_subdir)
+            items = df.list_files(path)
+            files.extend(items)
+        return files
 
 
 def OASIS_data(location, labels_location = None):
@@ -274,17 +357,11 @@ def OASIS_data(location, labels_location = None):
     if labels_location is None:
         labels_location = location
 
-    # dm = DataMatch(endswith='hardmask.nii.gz')
-    # list_training_label_ = dm.list_files(labels_location)
     list_training_labels_ = list_files(labels_location,endswith='hardmask.nii.gz')
 
-    # dd = DataMatch()
-    # dirs = dd.list_direcoties(os.path.join('disc1')) + dd.list_directories(os.path.join(locations, 'disc2'))
     dirs = list_directories(location+"/disc1") + list_directories(location+"/disc2")
     list_training_data_=[]
     for d in dirs:
-        # df = DataMatch(endswith="t88_gfc.hdr")
-        # files = df.list_files(os.path.join(d, '/PROCESSED/MPRAGE/T88_111'))
         dat = list_files(d+"/PROCESSED/MPRAGE/T88_111",endswith="t88_gfc.hdr")
         assert len(dat)==1
         dat=dat[0]
@@ -297,12 +374,11 @@ def OASIS_data(location, labels_location = None):
 
 
 def Tumor_data_JensCustomCreated():
-    list_training_data_   = list_files("/home/share/brain_mask/tumor_data_h5",endswith = 't1ce.nii.gz')
-    list_training_labels_ = list_files("/home/share/brain_mask/tumor_data_h5",endswith = '_human_mask.nii.gz')
+    list_training_data_ = list_files("/home/share/brain_mask/tumor_data_h5", endswith='t1ce.nii.gz')
+    list_training_labels_ = list_files("/home/share/brain_mask/tumor_data_h5", endswith='_human_mask.nii.gz')
     assert len(list_training_data_) == len(list_training_labels_)
     ID_check(list_training_data_, list_training_labels_)
     return list_training_data_, list_training_labels_
-
 
 
 def get_CrossVal_part(list_training_data, list_training_labels, CV_index, CV_total_folds = 2):
@@ -324,8 +400,8 @@ def get_CrossVal_part(list_training_data, list_training_labels, CV_index, CV_tot
     if CV_index == CV_total_folds - 1:
         cross_val_n_per_test = N - CV_index*cross_val_n_per_test # all remaining examples
 
-    list_test_data       = list_training_data[offset : offset + cross_val_n_per_test]
-    list_training_data   = list_training_data[:offset]  + list_training_data[offset+cross_val_n_per_test:]
-    list_training_labels = list_training_labels[:offset]  + list_training_labels[offset+cross_val_n_per_test:]
-    assert len(list_training_data)==len(list_training_labels)
-    return {'list_test_data':list_test_data,'list_training_data':list_training_data, 'list_training_labels':list_training_labels}
+    list_test_data = list_training_data[offset: offset + cross_val_n_per_test]
+    list_training_data = list_training_data[:offset]  + list_training_data[offset + cross_val_n_per_test:]
+    list_training_labels = list_training_labels[:offset]  + list_training_labels[(offset + cross_val_n_per_test):]
+    assert len(list_training_data) == len(list_training_labels)
+    return {'list_test_data': list_test_data, 'list_training_data': list_training_data, 'list_training_labels': list_training_labels}

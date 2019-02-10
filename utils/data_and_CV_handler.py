@@ -31,6 +31,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 import os
 from os import listdir as _listdir
 from os.path import isfile as _isfile, join as _join
+import fnmatch
 
 
 class DataMatch(object):
@@ -162,6 +163,21 @@ class DataMatch(object):
         if self.contains_not in img:
             return False
         return True
+
+    def find_nii(self, path):
+        """
+        for python 2.x - 3.4
+        find files recursively
+        """
+        matches = []
+        path = os.path.realpath(path)
+        print(path)
+        print(self.endswith)
+        for root, dirnames, filenames in os.walk(path):
+            for filename in filenames:
+                if filename.endswith('.nii') or filename.endswith('.nii.gz'):
+                    matches.append(os.path.join(root, filename))
+        return matches
 
 
 def list_files(dir_paths, endswith=None, contains=None, startswith=None, contains_not=None):

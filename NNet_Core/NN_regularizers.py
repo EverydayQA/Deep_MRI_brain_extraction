@@ -32,10 +32,15 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 import theano
 import numpy as np
 
+"""
+Regularizers allow to apply penalties on layer parameters or layer activity during optimization. These penalties are incorporated in the loss function that the network optimizes.
+
+The penalties are applied on a per-layer basis
+"""
 
 
 def Gregs_Regularizer(cnn, num_classes):
-    print "Experimental Gregs_Regularizer:: enabled"
+    print("Experimental Gregs_Regularizer:: enabled")
 #    assert bExperimental_Semanic_Hashing_enforcer==0, "dont use both!"
     assert num_classes is not None, "You need to provide a value for <num_classes> when using 'Gregs_Regularizer' in CompileOutputFunctions()"
     reg = 0
